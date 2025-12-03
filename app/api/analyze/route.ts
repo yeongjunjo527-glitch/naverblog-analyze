@@ -2,14 +2,15 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 export async function GET() {
-  // 1. DB에서 최근 30일 데이터 가져오기
+  // ✅ 1. 클라이언트 생성을 함수 안으로 이동
+  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  // 2. DB 조회
   const { data: stats, error } = await supabase
     .from('blog_stats')
     .select('date, views, visitors')
@@ -23,7 +24,7 @@ export async function GET() {
     });
   }
 
-  // 2. AI에게 분석 요청
+  // 3. AI 분석
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
