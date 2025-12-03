@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Naver Blog AI Advisor Collector",
+  "version": "1.0",
+  "description": "Collects Naver Blog stats and sends them to AI Blog Advisor",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://creator.naver.com/*",
+    "http://localhost:3000/*",
+    "https://*.vercel.app/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://creator.naver.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["inject.js"],
+      "matches": ["https://creator.naver.com/*"]
+    }
+  ]
+}

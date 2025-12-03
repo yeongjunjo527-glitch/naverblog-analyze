@@ -1,0 +1,5 @@
+{
+  "name": "AI Blog Advisor",
+  "description": "A comprehensive system to collect Naver Blog statistics via Chrome Extension, store them in Supabase, and analyze growth trends using Google Gemini AI.",
+  "requestFramePermissions": []
+}
