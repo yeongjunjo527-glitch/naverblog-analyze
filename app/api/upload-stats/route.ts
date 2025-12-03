@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// ✅ 1. CORS 설정 (보안 문 열기)
+// 1. CORS 설정
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
@@ -17,12 +17,18 @@ export async function OPTIONS() {
 export async function POST(request: Request) {
   const headers = corsHeaders();
 
-  // ✅ 2. Supabase 클라이언트를 "함수 안에서" 생성 (빌드 에러 방지)
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  // ✅ [수정됨] 함수 안에서 안전하게 생성 (빌드 에러 방지)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("❌ Supabase 환경변수가 없습니다.");
+    return NextResponse.json({ error: "Server Configuration Error" }, { status: 500, headers });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // ... 나머지 로직 ...
   const apiKey = request.headers.get('x-api-key');
   if (apiKey !== process.env.API_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers });
@@ -31,7 +37,6 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { dataType, data } = body;
-
     console.log(`📥 데이터 수신됨 [${dataType}]`);
 
     const statsList = data?.result?.stat || [];
@@ -48,7 +53,6 @@ export async function POST(request: Request) {
         const updateData: any = { date: date };
         if (dataType === 'views') updateData.views = count;
         else if (dataType === 'visitors') updateData.visitors = count;
-        
         updateData.raw_json = data;
 
         await supabase.from('blog_stats').upsert(updateData, { onConflict: 'date' });
